@@ -28,6 +28,11 @@ try {
         $gitDescribe = "$gitDescribe-$branch"
     }
 
+    $isDirty = git status --porcelain
+    if ($isDirty) {
+        $gitDescribe = "$gitDescribe-DWR"
+    }
+
     $buildDate = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
     $shortVers = $gitDescribe.Split('-')

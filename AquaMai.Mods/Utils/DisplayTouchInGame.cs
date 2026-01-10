@@ -205,6 +205,12 @@ public static class DisplayTouchInGame
         {
             foreach (Transform item in touchPanel.transform)
             {
+                // Unity 的销毁是延迟到帧末执行的，所以这里还是会存在
+                if (item.name.StartsWith("CircleGraphic"))
+                {
+                    Object.Destroy(item.gameObject);
+                    continue;
+                }
                 var customGraphic = item.GetComponent<CustomGraphic>();
                 customGraphic.color = Color.blue;
                 if (item.name.StartsWith("A"))
