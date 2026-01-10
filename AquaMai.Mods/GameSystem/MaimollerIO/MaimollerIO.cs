@@ -116,11 +116,13 @@ public class MaimollerIO
        zh: "当混用 Maimoller 与其他协议并且 Maimoller 在 2P 上，而且 Maimoller 无法正常使用时开启")]
     private static readonly bool alternative2p = false;
 
-    private static readonly MaimollerDevice[] _devices = [.. Enumerable.Range(0, 2).Select(i => new MaimollerDevice(i, alternative2p))];
-    private static readonly MaimollerLedManager[] _ledManagers = [.. Enumerable.Range(0, 2).Select(i => new MaimollerLedManager(_devices[i].output))];
+    private static MaimollerDevice[] _devices;
+    private static MaimollerLedManager[] _ledManagers;
 
     public static void OnBeforePatch()
     {
+        _devices = [.. Enumerable.Range(0, 2).Select(i => new MaimollerDevice(i, alternative2p))];
+        _ledManagers = [.. Enumerable.Range(0, 2).Select(i => new MaimollerLedManager(_devices[i].output))];
         for (int i = 0; i < 2; i++)
         {
             if (!ShouldInitForPlayer(i)) continue;
