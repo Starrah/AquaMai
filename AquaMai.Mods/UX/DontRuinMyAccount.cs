@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using AquaMai.Config.Attributes;
 using AquaMai.Core.Attributes;
 using AquaMai.Core.Helpers;
@@ -29,32 +28,22 @@ public class DontRuinMyAccount
     private static uint currentTrackNumber => GameManager.MusicTrackNumber;
     public static bool ignoreScore;
     private static UserScore oldScore;
+    
+    public static void trigger()
+    {
+        if (!(GameManager.IsInGame && !ignoreScore)) return;
+        // 对8号和10号门，永不启用防毁号（它们中用到了autoplay功能来模拟特殊谱面效果）
+        if (GameManager.IsKaleidxScopeMode && (Singleton<KaleidxScopeManager>.Instance.gateId == 8 ||
+                                               Singleton<KaleidxScopeManager>.Instance.gateId == 10)) return;
+        ignoreScore = true;
+        MelonLogger.Msg("[DontRuinMyAccount] Triggered. Will ignore this score.");
+    }
 
     [HarmonyPatch(typeof(GameProcess), "OnUpdate")]
     [HarmonyPostfix]
     public static void OnUpdate()
     {
-        if (GameManager.IsInGame && GameManager.IsAutoPlay() && !ignoreScore)
-        {
-            if (GameManager.IsKaleidxScopeMode)
-            {
-                if (Singleton<KaleidxScopeManager>.Instance.gateId == 8 ||
-                    Singleton<KaleidxScopeManager>.Instance.gateId == 10)
-                {
-                    ignoreScore = false;
-                }
-                else
-                {
-                    ignoreScore = true;
-                    MelonLogger.Msg("[DontRuinMyAccount] Autoplay triggered, will ignore this score.");
-                }
-            }
-            else
-            {
-                ignoreScore = true;
-                MelonLogger.Msg("[DontRuinMyAccount] Autoplay triggered, will ignore this score.");
-            }
-        }
+        if (GameManager.IsInGame && GameManager.IsAutoPlay()) trigger();
     }
 
     [HarmonyPatch(typeof(GameProcess), "OnStart")]
