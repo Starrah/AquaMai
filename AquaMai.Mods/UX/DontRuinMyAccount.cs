@@ -26,8 +26,9 @@ public class DontRuinMyAccount
     [ConfigEntry(zh: "AutoPlay 激活后显示提示", en: "Show notice when AutoPlay is activated")]
     public static readonly bool showNotice = true;
     [ConfigEntry(zh: "使用练习模式/DebugFeature相关功能也不保存成绩", en: "Also not save scores when using PracticeMode/DebugFeature")]
-    public static readonly bool forPracticeMode = false;
-    
+    public static readonly bool forPracticeMode = true;
+
+    private static bool Enabled = false; // 需要有一个flag来标记本模块是否被disable了，不然如果disable了本模块后，开练习模式时调用到triggerForPracticeMode还是触发了功能就不对了。
     private static uint currentTrackNumber => GameManager.MusicTrackNumber;
     public static bool ignoreScore;
     private static UserScore oldScore;
@@ -40,7 +41,7 @@ public class DontRuinMyAccount
 
     public static void trigger()
     {
-        if (!(GameManager.IsInGame && !ignoreScore)) return;
+        if (!(Enabled && !ignoreScore && GameManager.IsInGame)) return;
         // 对8号和10号门，永不启用防毁号（它们中用到了autoplay功能来模拟特殊谱面效果）
         if (GameManager.IsKaleidxScopeMode && (Singleton<KaleidxScopeManager>.Instance.gateId == 8 ||
                                                Singleton<KaleidxScopeManager>.Instance.gateId == 10)) return;
@@ -48,19 +49,16 @@ public class DontRuinMyAccount
         MelonLogger.Msg("[DontRuinMyAccount] Triggered. Will ignore this score.");
     }
 
+    public static void OnBeforePatch()
+    {
+        Enabled = true;
+    }
+
     [HarmonyPatch(typeof(GameProcess), "OnUpdate")]
     [HarmonyPostfix]
     public static void OnUpdate()
     {
         if (GameManager.IsInGame && GameManager.IsAutoPlay()) trigger();
-    }
-
-    [HarmonyPatch(typeof(GameProcess), "OnStart")]
-    [HarmonyPostfix]
-    [EnableIf(nameof(showNotice))]
-    public static void OnStart(GameMonitor[] ____monitors)
-    {
-        ____monitors[0].gameObject.AddComponent<NoticeUI>();
     }
 
     [HarmonyPrefix]
@@ -141,10 +139,10 @@ public class DontRuinMyAccount
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(GameProcess), nameof(GameProcess.OnStart))]
-    public static void OnGameStart()
+    public static void OnGameStart(GameMonitor[] ____monitors)
     {
-        // For compatibility with QuickRetry
-        ignoreScore = false;
+        ignoreScore = false; // For compatibility with QuickRetry
+        if (showNotice) ____monitors[0].gameObject.AddComponent<NoticeUI>();
     }
 
     private class NoticeUI : MonoBehaviour

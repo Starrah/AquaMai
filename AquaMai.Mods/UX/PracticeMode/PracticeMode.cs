@@ -69,13 +69,14 @@ public class PracticeMode
 
     public static void SetSpeed()
     {
+        DontRuinMyAccount.triggerForPracticeMode();
+        
         player.SetPitch((float)(1200 * Math.Log(speed, 2)));
         // player.SetDspTimeStretchRatio(1 / speed);
         player.UpdateAll();
 
         movie.player.SetSpeed(speed);
         gameCtrl?.ResetOptionSpeed();
-        DontRuinMyAccount.triggerForPracticeMode();
     }
 
     private static IEnumerator SetSpeedCoroutineInner()
