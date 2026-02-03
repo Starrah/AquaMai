@@ -12,6 +12,7 @@ using Manager;
 using Monitor;
 using Monitor.Game;
 using Process;
+using UnityEngine;
 using AquaMai.Config.Attributes;
 using AquaMai.Config.Types;
 using AquaMai.Core.Attributes;
@@ -84,10 +85,7 @@ public class PracticeMode
         // player.SetDspTimeStretchRatio(1 / speed);
         player.UpdateAll();
         
-        foreach (var m in movie)
-        { 
-            m.player?.SetSpeed(speed);
-        }
+        movie?.ForEach(m => m.player?.SetSpeed(speed));
         GameCtrlResetOptionSpeed();
     }
 
